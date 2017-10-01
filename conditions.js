@@ -1,8 +1,9 @@
 
 class IfCallback {
-	constructor(actionName, callback) {
+	constructor(actionName, callback, params) {
 		this.name = actionName;
 		this.callback = callback;
+		this.params = params;
 		}
 
 	call(state, ifTag, activeTag, params) {
@@ -84,10 +85,15 @@ function randomInt(min, max) {
 
 function loadConditions() {
 	var conditions = __getTags("if");
+	var extraCallbacks = __getTags("ifCallback");
 
-	IfCallback.createCallback('eval', function(state, ifTag, callbackTag, params) { eval(callbackTag.innerHTML); });
-	IfCallback.createCallback('toggle', function(state, ifTag, callbackTag, params) { toggle(element(callbackTag.innerHTML)); });
-	IfCallback.createCallback('colourswap', function(state, ifTag, callbackTag, params) { var index = randomInt(0, params.colours.length - 1); element(params.element).style.background = params.colours[index]; });
+	for (let i = 0; i < extraCallbacks.length; i++) {
+		eval(`IfCallback.createCallback('${extraCallbacks[i].getAttribute("name")}', (state, ifTag, callbackTag, params) => { ${extraCallbacks[i].innerHTML} }, [${extraCallbacks[i].getAttribute("params")}])`);
+		extraCallbacks[i].style.display = 'none';
+	}
+	
+	IfCallback.createCallback('eval', function(state, ifTag, callbackTag, params) { eval(callbackTag.innerHTML); }, []);
+	IfCallback.createCallback('toggle', function(state, ifTag, callbackTag, params) { toggle(element(callbackTag.innerHTML)); }, []);
 
 	for (let i = 0; i < conditions.length; i++) {
 
@@ -109,7 +115,6 @@ function loadConditions() {
 				let key = _params[k].name;
 				let value = _params[k].value;
 
-				console.log(`params.${key} = ${value};`);
 				eval(`params.${key} = ${value};`);
 			}
 

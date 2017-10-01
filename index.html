@@ -2,6 +2,9 @@
 <html>
 <head>
 	<title>Test</title>
+	<ifCallback name="colourswap" params="'colours', 'element'">
+		var index = randomInt(0, params.colours.length - 1); element(params.element).style.background = params.colours[index];
+	</ifCallback>
 </head>
 <body>
 
