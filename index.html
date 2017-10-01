@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Test</title>
+</head>
+<body>
+
+<script>
+
+	var user = true;
+	function isUserLogged() {
+		return user;
+	}
+</script>
+
+<var name="numCats" visible="true">1911</var>
+
+<if condition="isUserLogged()" type="onchange"> 
+	<eval>numCats.value += 10;</eval>
+</if>
+
+<button onclick="user = !user">Increment</button>
+
+<script type="text/javascript" src="framework.js"></script>
+
+</body>
+</html>
