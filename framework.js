@@ -28,10 +28,10 @@ function __getTags(name){
 	return document.body.getElementsByTagName(name)
 }
 
-
 function load() {
 
 	__include_script("variables.js");
+	__include_script("functions.js");
 	__include_script("conditions.js");
 
 	console.log("Loaded framework");

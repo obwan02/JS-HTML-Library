@@ -3,10 +3,10 @@ class IfCallback {
 	constructor(actionName, callback) {
 		this.name = actionName;
 		this.callback = callback;
-	}
+		}
 
-	call(state, ifTag, activeTag) {
-		this.callback(state, ifTag, activeTag);
+	call(state, ifTag, activeTag, params) {
+		this.callback(state, ifTag, activeTag, params);
 	}
 
 }
@@ -29,7 +29,7 @@ IfCallback.getCallback = function(name) {
 
 
 //Constantly calls the callback with the current state
-function startIfCheck_constant(ifTag, tag, callback) {
+function startIfCheck_constant(ifTag, tag, callback, params) {
 
 	var state = eval(ifTag.getAttribute("condition"));
 	if(typeof(state) != "boolean") {
@@ -37,13 +37,13 @@ function startIfCheck_constant(ifTag, tag, callback) {
 		return;
 	}
 
-	callback.call(state, ifTag, tag);
+	callback.call(state, ifTag, tag, params);
 
-	setTimeout(function () { startIfCheck_constant(ifTag, tag, callback); }, 0);
+	setTimeout(function () { startIfCheck_constant(ifTag, tag, callback, params); }, 0);
 }
 
 //Only does callback when the condition changes
-function startIfCheck_change(ifTag, tag, callback, prevState) {
+function startIfCheck_change(ifTag, tag, callback, params, prevState) {
 
 	var state = eval(ifTag.getAttribute("condition"));
 	if(typeof(state) != "boolean") {
@@ -52,10 +52,10 @@ function startIfCheck_change(ifTag, tag, callback, prevState) {
 	}
 
 	if(prevState != state) {
-		callback.call(state, ifTag, tag);
+		callback.call(state, ifTag, tag, params);
 	}
 
-	setTimeout(function () { startIfCheck_change(ifTag, tag, callback, state); }, 0);
+	setTimeout(function () { startIfCheck_change(ifTag, tag, callback, params, state); }, 0);
 }
 
 function validateIfType(type) {
@@ -70,13 +70,24 @@ function validateIfType(type) {
 	return false;
 }
 
-function show(tag, value) {
-	tag.innerHTML = value;
+function toggle(tag) {
+	tag.style.display = (tag.style.display == 'inline' | tag.style.display == 'block' | tag.style.display == "")  ? 'none' : 'block';
+}
+
+function element(name) {
+	return document.getElementById(name);
+}
+
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function loadConditions() {
 	var conditions = __getTags("if");
-	IfCallback.createCallback('eval', function(state, ifTag, callbackTag) { eval(callbackTag.innerHTML); });
+
+	IfCallback.createCallback('eval', function(state, ifTag, callbackTag, params) { eval(callbackTag.innerHTML); });
+	IfCallback.createCallback('toggle', function(state, ifTag, callbackTag, params) { toggle(element(callbackTag.innerHTML)); });
+	IfCallback.createCallback('colourswap', function(state, ifTag, callbackTag, params) { var index = randomInt(0, params.colours.length - 1); element(params.element).style.background = params.colours[index]; });
 
 	for (let i = 0; i < conditions.length; i++) {
 
@@ -90,7 +101,20 @@ function loadConditions() {
 				console.error("Invalid callback: " + tag.tagName);
 				continue;
 			}
-			callbacks.push({tag: tag, callback: callback});
+
+			let _params = tag.attributes;
+			let params = {};
+
+			for(let k = 0; k < _params.length; k++) {
+				let key = _params[k].name;
+				let value = _params[k].value;
+
+				console.log(`params.${key} = ${value};`);
+				eval(`params.${key} = ${value};`);
+			}
+
+			tag.style.display = 'none';
+			callbacks.push({tag: tag, callback: callback, params: params} );
 		}
 
 		//Check conditions
@@ -102,6 +126,8 @@ function loadConditions() {
 			continue;
 		}
 
+		
+
 		if(conditionType == "onchange") {
 
 			var state = eval(conditions[i].getAttribute("condition"));
@@ -111,7 +137,7 @@ function loadConditions() {
 			}
 
 			for (let j = 0; j < callbacks.length; j++) {
-				startIfCheck_change(conditions[i], callbacks[j].tag, callbacks[j].callback, state);
+				startIfCheck_change(conditions[i], callbacks[j].tag, callbacks[j].callback, callbacks[j].params, state);
 			}
 		}
 
@@ -124,7 +150,7 @@ function loadConditions() {
 			}
 
 			for (let j = 0; j < callbacks.length; j++) {
-				startIfCheck_constant(conditions[i], callbacks[j].tag, callbacks[j].callback);
+				startIfCheck_constant(conditions[i], callbacks[j].tag, callbacks[j].callback, callbacks[j].params);
 			}
 		}
 	}

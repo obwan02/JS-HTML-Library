@@ -5,21 +5,16 @@
 </head>
 <body>
 
-<script>
+<div id="test1" style="height: 100px; width: 100px; background: blue;"></div>
 
-	var user = true;
-	function isUserLogged() {
-		return user;
-	}
-</script>
-
-<var name="numCats" visible="true">1911</var>
+<var name="user" visible="true">true</var>
+<func name="isUserLogged" params="">return user.value;</func>
 
 <if condition="isUserLogged()" type="onchange"> 
-	<eval>numCats.value += 10;</eval>
+	<colourSwap colours="['blue', 'red', 'purple']" element="'test1'"></colourSwap>
 </if>
 
-<button onclick="user = !user">Increment</button>
+<button onclick="user.value = !user.value">Increment</button>
 
 <script type="text/javascript" src="framework.js"></script>
 
